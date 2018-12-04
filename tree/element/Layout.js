@@ -1,0 +1,102 @@
+import styleConfig from '../utils/style'
+import {getValidItem} from '../utils/util'
+
+/**
+ * pickValueFromArrs
+ * @param option
+ * @param index
+ */
+function pickValueFromArrs(option, index) {
+  const result = {}
+  Object.keys(option).forEach(function (field) {
+    const data = option[field]
+    result[field] = Array.isArray(data) ? data[index % data.length] : data
+  })
+  return result
+}
+
+// function getLayer(parent) {
+//   return parent ? parent.layer + 1 : 0
+// }
+
+export function getNodeDirection(node, parent) {
+  return styleConfig.options[node.layer].direction || parent.getLayout().direction
+}
+
+/**
+ * Layout
+ */
+class Layout {
+  // extend parent style and layout
+  setStyleAndLayout(parent, index) {
+    this.setLineStyle(parent, index)
+    this.setBoxStyle(parent, index)
+    this.setTextStyle(parent, index)
+    this.setLayout(parent, index)
+  }
+
+  setLineStyle() {
+    this.lineStyle = styleConfig.lineStyle
+  }
+
+  getLineStyle() {
+    return this.lineStyle
+  }
+
+  setBoxStyle(parent, index) {
+    this.boxStyle = {
+      ...(parent ? parent.getBoxStyle() : {}),
+      ...pickValueFromArrs(styleConfig.options[this.layer].box || {}, index),
+    }
+  }
+
+  getBoxStyle() {
+    return this.boxStyle
+  }
+
+  setTextStyle(parent) {
+    let texts = styleConfig.options[this.layer].texts || [{}]
+    if (!Array.isArray(texts)) {
+      texts = [texts]
+    }
+    const pTexts = parent ? parent.getTextStyle() : [{}]
+    this.textStyle = []
+    for (let i = 0; i < Math.max(texts.length, pTexts.length); i++) {
+      this.textStyle.push({
+        ...getValidItem(pTexts, i),
+        ...getValidItem(texts, i),
+        fontFamily: styleConfig.fontFamily
+      })
+    }
+  }
+
+  getTextStyle() {
+    return this.textStyle
+  }
+
+  setLayout(parent) {
+    const layer = this.layer
+    const pLayout = parent ? parent.getLayout() : {child: {}}
+
+    const {child, brother, direction, ignoreChild, showIcon} = styleConfig.options[layer]
+    this.layout = {
+      child: {
+        ...pLayout.child,
+        ...child,
+      },
+      brother: {
+        ...pLayout.brother,
+        ...brother,
+      },
+      direction: direction || pLayout.direction,
+      ignoreChild: ignoreChild !== undefined ? ignoreChild : pLayout.ignoreChild,
+      showIcon: showIcon !== undefined ? showIcon : pLayout.ignoreChild
+    }
+  }
+
+  getLayout() {
+    return this.layout
+  }
+}
+
+export default Layout
