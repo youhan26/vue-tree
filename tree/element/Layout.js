@@ -1,5 +1,6 @@
 import styleConfig from '../utils/style'
 import {getValidItem} from '../utils/util'
+import {handleLevelPosition} from '../utils/math'
 
 /**
  * pickValueFromArrs
@@ -44,9 +45,19 @@ class Layout {
   }
 
   setBoxStyle(parent, index) {
+    const nodeStyle = pickValueFromArrs(styleConfig.options[this.layer].box || {}, index)
+    const {width, height} = nodeStyle
+    if (width) {
+      const data = handleLevelPosition(width)
+      data && (nodeStyle.width = data)
+    }
+    if (height) {
+      const data = handleLevelPosition(height)
+      data && (nodeStyle.height = data)
+    }
     this.boxStyle = {
       ...(parent ? parent.getBoxStyle() : {}),
-      ...pickValueFromArrs(styleConfig.options[this.layer].box || {}, index),
+      ...nodeStyle
     }
   }
 
@@ -82,15 +93,15 @@ class Layout {
     this.layout = {
       child: {
         ...pLayout.child,
-        ...child,
+        ...handleLevelPosition(child),
       },
       brother: {
         ...pLayout.brother,
-        ...brother,
+        ...handleLevelPosition(brother),
       },
       direction: direction || pLayout.direction,
       ignoreChild: ignoreChild !== undefined ? ignoreChild : pLayout.ignoreChild,
-      showIcon: showIcon !== undefined ? showIcon : pLayout.ignoreChild
+      showIcon: showIcon !== undefined ? showIcon : pLayout.showIcon
     }
   }
 

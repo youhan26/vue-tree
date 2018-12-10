@@ -1,6 +1,7 @@
 import {trimDomStyle} from '../utils/util'
 import {CANVAS_SIZE, ICON_OFFSET, ICON_SIZE} from '../utils/constant'
 import imageHelper from '../utils/imageLoader'
+import {handleLevelPosition} from '../utils/math'
 
 /**
  * auto-compute canvas size by parent element
@@ -92,11 +93,13 @@ function drawText(ctx, position, text) {
   ctx.fillText(text, position.x, position.y)
 }
 
+
 function drawIcon(ctx, type, {x, y}) {
   imageHelper(type)
     .then((image) => {
       const {width, height} = image
-      ctx.drawImage(image, 0, 0, width, height, x - ICON_SIZE / 2, y + ICON_OFFSET, ICON_SIZE, ICON_SIZE)
+      const iconSize = handleLevelPosition(ICON_SIZE)
+      ctx.drawImage(image, 0, 0, width, height, x - iconSize / 2, y + handleLevelPosition(ICON_OFFSET), iconSize, iconSize)
     })
 }
 

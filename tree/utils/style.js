@@ -1,4 +1,4 @@
-import {BOX_TYPES, DIRECTIONS} from './constant'
+import { BOX_TYPES, DIRECTIONS } from './constant'
 
 
 const lineStyle = {
@@ -68,10 +68,10 @@ const options = [{
     offset: 10
   }],
   child: {
-    y: 68,
+    y: 48,
   },
   brother: {
-    x: 30,
+    x: 16,
     y: 0
   },
   direction: DIRECTIONS.bv,

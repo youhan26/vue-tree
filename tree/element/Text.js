@@ -1,6 +1,7 @@
-import {getAbsolutePos} from '../utils/math'
+import {getAbsolutePos, handleLevelPosition} from '../utils/math'
 import canvas from '../dom/canvas'
 import {changeToArray} from '../utils/util'
+import config from '../utils/config'
 
 /**
  * Text
@@ -18,11 +19,11 @@ class Text {
     this.styles.reduce((currentPos, style) => {
       points.push({
         x: currentPos.x,
-        y: currentPos.y + style.offset
+        y: currentPos.y + handleLevelPosition(style.offset)
       })
       return {
         x: currentPos.x,
-        y: currentPos.y + style.offset + style.fontSize
+        y: currentPos.y + handleLevelPosition(style.offset) + handleLevelPosition(style.fontSize)
       }
     }, p)
     return points
@@ -38,10 +39,11 @@ class Text {
 
   updateStyle(ctx, index) {
     ctx.restore()
+    const ratio = config.get()
     const {color, fontSize, fontFamily} = this.styles[index]
     ctx.lineWidth = 2
     ctx.fillStyle = color
-    ctx.font = `${fontSize}px ${fontFamily}`
+    ctx.font = `${fontSize * ratio}px ${fontFamily}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
   }

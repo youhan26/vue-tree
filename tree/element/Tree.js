@@ -21,10 +21,12 @@ class Tree {
     this.rootNode.draw(this.ctx, this.startPos)
   }
 
-  repaint() {
-    const rawData = this.rootNode.getRawData()
-    this.rootNode = NodeFactory(extraData(rawData))
-    this.draw()
+  repaint(data, startPos) {
+    if (!data) {
+      data = this.rootNode.getRawData()
+    }
+    this.rootNode = NodeFactory(extraData(data))
+    this.draw(startPos)
   }
 
   toggleNode(node) {
@@ -36,7 +38,7 @@ class Tree {
     node.open = !node.open
     if (node.open && node.parent) {
       node.parent.children.forEach((brother) => {
-        brother.open = brother === node
+        brother.open = brother.key === node.key
       })
     }
   }
