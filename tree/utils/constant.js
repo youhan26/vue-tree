@@ -1,5 +1,6 @@
 // default canvas size
 export const CANVAS_SIZE = 10000
+export const CANVAS_SCROLL_BAR = 7200
 
 // collapse icon size
 export const ICON_OFFSET = -4

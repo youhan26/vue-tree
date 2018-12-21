@@ -2,8 +2,10 @@ import styleConfig from '../utils/style'
 import {getValidItem} from '../utils/util'
 import {handleLevelPosition} from '../utils/math'
 
+// 拿配置
 /**
  * pickValueFromArrs
+ * 用于处理 Box 模型的样式
  * @param option
  * @param index
  */
@@ -33,6 +35,7 @@ class Layout {
     this.setLineStyle(parent, index)
     this.setBoxStyle(parent, index)
     this.setTextStyle(parent, index)
+    this.setLevelStyle(parent, index)
     this.setLayout(parent, index)
   }
 
@@ -83,6 +86,17 @@ class Layout {
 
   getTextStyle() {
     return this.textStyle
+  }
+
+  setLevelStyle(parent) {
+    this.levelStyle = styleConfig.options[this.layer].level || {}
+    if (Object.keys(this.levelStyle).length === 0 && parent) {
+      this.levelStyle = parent.getLevelStyle()
+    }
+  }
+
+  getLevelStyle() {
+    return this.levelStyle
   }
 
   setLayout(parent) {

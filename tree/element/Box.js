@@ -31,6 +31,7 @@ class Box {
 
   getSize() {
     const {width, height} = this.style
+    // console.log('width:', width, 'height: ', height)
     if (width && height) {
       return {width, height}
     }
@@ -38,10 +39,16 @@ class Box {
     return {width: 0, height: 0}
   }
 
+  getRadius() {
+    const {radius} = this.style
+    return radius
+  }
+
   updateStyle(ctx) {
     ctx.restore()
-    const {lineWidth, color, shadowBlur, shadowColor, shadowOffsetX, shadowOffsetY} = this.style
+    const {lineWidth, radius, color, shadowBlur, shadowColor, shadowOffsetX, shadowOffsetY} = this.style
     ctx.lineWidth = lineWidth
+    ctx.radius = radius
     ctx.fillStyle = color
     ctx.strokeStyle = color
     ctx.shadowBlur = shadowBlur
@@ -63,6 +70,14 @@ class LineBox extends Box {
     canvas.drawLineBox(ctx, positions[0], positions[1])
   }
 }
+class RoundLineBox extends Box {
+  draw(ctx) {
+    this.updateStyle(ctx)
+    const positions = this.getPositions()
+    const radius = this.getRadius()
+    canvas.drawRoundLineBox(ctx, radius, positions[0], positions[1])
+  }
+}
 
 
 class FillBox extends Box {
@@ -72,13 +87,29 @@ class FillBox extends Box {
     canvas.drawFillBox(ctx, positions[0], positions[1])
   }
 }
+class RoundFillBox extends Box {
+  draw(ctx) {
+    this.updateStyle(ctx)
+    const positions = this.getPositions()
+    const radius = this.getRadius()
+    canvas.drawRoundFillBox(ctx, radius, positions[0], positions[1])
+  }
+}
 
 
 const BoxFactory = function (node, style) {
-  if (style.type === BOX_TYPES.fill) {
-    return new FillBox(node, style)
-  } else if (style.type === BOX_TYPES.line) {
-    return new LineBox(node, style)
+  if (style.type === BOX_TYPES.line) {
+    if (style.radius) {
+      return new RoundLineBox(node, style)
+    } else {
+      return new LineBox(node, style)
+    }
+  } else if (style.type === BOX_TYPES.fill) {
+    if (style.radius) {
+      return new RoundFillBox(node, style)
+    } else {
+      return new FillBox(node, style)
+    }
   }
   return Box(node, style)
 }

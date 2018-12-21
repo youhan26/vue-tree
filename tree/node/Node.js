@@ -2,6 +2,7 @@ import {getIconBox, hasChildren, isBVNode, isLeaf, isRBVNode} from '../utils/uti
 import {BoxFactory} from '../element/Box'
 import Line from '../element/Line'
 import Text from '../element/Text'
+import Level from '../element/Level'
 import Layout from '../element/Layout'
 import NodeFactory from './NodeFactory'
 import {getAbsolutePos} from '../utils/math'
@@ -12,17 +13,19 @@ import event from '../utils/event'
 class Node extends Layout {
   constructor(node, parent, index) {
     super()
-    const {titles, key, layer, open, children, index: indexx, ...others} = node
+    const {titles, level, key, layer, open, children, index: indexx, ...others} = node // indexx 防止 ...others 加入
     this.titles = titles
+    this.level = level
     this.layer = layer
     this.key = key
     this.parent = parent
     this.open = open !== undefined ? open : false
-    this.rawData = others
+    this.rawData = {...others, level}
 
     this.setStyleAndLayout(parent, index)
     this.box = BoxFactory(this, this.getBoxStyle())
     this.text = new Text(this, this.titles, this.getTextStyle())
+    this.level = new Level(this, this.level, this.getBoxStyle(), this.getTextStyle(), this.getLevelStyle())
     if (parent) {
       this.line = new Line(this, parent, parent.getLineStyle())
     }
@@ -31,18 +34,22 @@ class Node extends Layout {
         return new NodeFactory(childNode, this, index)
       })
     }
+    // todo refactor
+    this.initNodePosition()
     if (isLeaf(node)) {
       this.initLeafNode()
     } else {
       this.initPosition()
     }
-    this.initNodePosition()
+    this.size.iconPosition = this.size.outputPosition
   }
 
   initNodePosition() {
+    this.size = {}
     if (!this.parent) {
       return
     }
+    // todo need refactor
     const {width, height} = this.getBoxStyle()
     const {brother} = this.getLayout()
     if (isBVNode(this.parent)) {
@@ -56,13 +63,13 @@ class Node extends Layout {
         y: brother.y + height / 2
       }
     }
-    this.size.iconPosition = this.size.outputPosition
   }
 
   initLeafNode() {
     const {width, height} = this.getBoxStyle()
     const {brother} = this.getLayout()
     this.size = {
+      ...this.size,
       box: {width, height},
       container: {
         width: width + 2 * brother.x,
@@ -100,6 +107,7 @@ class Node extends Layout {
     this.box.draw(ctx)
     this.text.draw(ctx)
     this.line && this.line.draw(ctx)
+    this.level.draw(ctx)
     if (hasChildren(this)) {
       const realIconPosition = getAbsolutePos(this.realBasePosition, this.size.iconPosition)
       if (this.open) {
@@ -113,6 +121,7 @@ class Node extends Layout {
     const enableDebugger = false
     if (enableDebugger) {
       this.drawPosition(ctx)
+      this.drawLinePosition(ctx)
     }
   }
 
@@ -143,10 +152,14 @@ class Node extends Layout {
     fillPosition(ctx, getAbsolutePos(this.realBasePosition, boxPosition))
   }
 
+  drawLinePosition(ctx) {
+    const {width: x, height: y} = this.size.realContainer || {}
+    canvas.drawLineBox(ctx, this.realBasePosition, getAbsolutePos(this.realBasePosition, {x, y}))
+  }
+
   drawChildren(ctx) {
-    const fixOffset = this.getChildBasePosition()
     this.children.forEach((child, index) => {
-      child.draw(ctx, getAbsolutePos(fixOffset, this.getChildPosition(index)))
+      child.draw(ctx, getAbsolutePos(this.realBasePosition, this.getChildPosition(index)))
     })
   }
 }

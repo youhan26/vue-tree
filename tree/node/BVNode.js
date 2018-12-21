@@ -1,19 +1,28 @@
 import Node from './Node'
+import {isBVNode} from '../utils/util'
 
 class BVNode extends Node {
   initPosition() {
     const {brother, child, ignoreChild} = this.getLayout()
-    const {container: childContainer} = this.children[0].size
     const {width, height} = this.getBoxStyle()
     this.size = {
+      ...this.size,
       box: {
         width,
         height
       }
     }
+    const childrenWidth = this.children.reduce((sum, current) => {
+      return sum + current.size.container.width
+    }, 0)
     this.size.realContainer = {
-      width: this.children.length * childContainer.width + 2 * brother.x,
-      height: childContainer.height + child.y + this.size.box.height + 2 * brother.y
+      width: Math.max(
+        this.size.box.width,
+        childrenWidth
+      ) + 2 * brother.x,
+      height: this.children.reduce((sum, current) => {
+        return Math.max(sum, current.size.container.height)
+      }, 0) + child.y + this.size.box.height + 2 * brother.y
     }
     if (ignoreChild) {
       this.size.container = {
@@ -22,9 +31,32 @@ class BVNode extends Node {
       }
     } else {
       this.size.container = this.size.realContainer
+      // todo need refactor
+      if (!this.parent || isBVNode(this.parent)) {
+        const childrenLen = this.children.length
+        // odd
+        if (childrenLen % 2) {
+          const middleIndex = Math.floor(childrenLen / 2)
+          this.size.inputPosition = {
+            x: this.children.slice(0, middleIndex).reduce(function (sum, item) {
+              return sum + item.size.container.width
+            }, 0) + this.children[middleIndex].size.inputPosition.x + brother.x,
+            y: brother.y
+          }
+        } else {
+          // even
+          const firstChild = this.children[0]
+          const lastChild = this.children[childrenLen - 1]
+          const firstChildInput = firstChild.size.inputPosition.x
+          this.size.inputPosition = {
+            x: firstChildInput + (childrenWidth - firstChildInput - (lastChild.size.container.width - lastChild.size.inputPosition.x)) / 2 + brother.x,
+            y: brother.y
+          }
+        }
+      }
     }
     this.size.textPosition = {
-      x: this.size.container.width / 2,
+      x: this.size.inputPosition.x,
       y: brother.y
     }
     this.size.boxPosition = {
@@ -37,20 +69,13 @@ class BVNode extends Node {
     }
   }
 
-  getChildBasePosition() {
-    const {container, realContainer} = this.size
-    return {
-      x: this.realBasePosition.x - (realContainer.width - container.width) / 2,
-      y: this.realBasePosition.y
-    }
-  }
-
   getChildPosition(index) {
     const {brother, child} = this.getLayout()
-    const {container: childContainer} = this.children[0].size
     return {
       x: brother.x +
-        index * childContainer.width,
+        this.children.slice(0, index).reduce((sum, current) => {
+          return sum + current.size.container.width
+        }, 0),
       y: brother.y + this.size.box.height + child.y
     }
   }

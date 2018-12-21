@@ -40,10 +40,10 @@ class Text {
   updateStyle(ctx, index) {
     ctx.restore()
     const ratio = config.get()
-    const {color, fontSize, fontFamily} = this.styles[index]
+    const {color, fontWeight, fontSize, fontFamily} = this.styles[index]
     ctx.lineWidth = 2
     ctx.fillStyle = color
-    ctx.font = `${fontSize * ratio}px ${fontFamily}`
+    ctx.font = `${fontWeight} ${fontSize * ratio}px ${fontFamily}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
   }

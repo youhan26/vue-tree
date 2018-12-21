@@ -11,8 +11,8 @@ function getAbsolutePos(relativePos, basePos) {
     return {x: 0, y: 0}
   }
   return {
-    x: Number((relativePos.x + basePos.x).toFixed(2)),
-    y: Number((relativePos.y + basePos.y).toFixed(2)),
+    x: toFixed(relativePos.x + basePos.x, 2),
+    y: toFixed((relativePos.y + basePos.y), 2),
   }
 }
 
@@ -49,9 +49,20 @@ function baseRatioPosition(position, ratio) {
   return position * ratio
 }
 
+/**
+ * toFixed
+ * @param number
+ * @param len
+ * @returns {number}
+ */
+function toFixed(number, len) {
+  return Number(Number.prototype.toFixed.call(number, len))
+}
+
 export {
   getAbsolutePos,
   isInRectangle,
   handleLevelPosition,
-  handleRadioPosition
+  handleRadioPosition,
+  toFixed
 }

@@ -3,16 +3,19 @@ import Node from './Node'
 class RBVNode extends Node {
   initPosition() {
     const {brother, child, ignoreChild} = this.getLayout()
-    const {container: childContainer} = this.children[0].size
     const {width, height} = this.getBoxStyle()
     this.size = {
+      ...this.size,
       box: {
         width,
         height
       }
     }
     this.size.realContainer = {
-      width: 2 * brother.x + child.x + this.size.box.width / 2 + childContainer.width,
+      width: 2 * brother.x + child.x + this.size.box.width / 2 +
+        this.children.reduce((sum, current) => {
+          return Math.max(sum, current.size.container.width)
+        }, 0),
       height: 2 * brother.y + child.y + this.size.box.height +
         this.children.reduce((sum, current) => {
           return sum + current.size.container.height
@@ -38,13 +41,6 @@ class RBVNode extends Node {
     this.size.outputPosition = {
       x: this.size.textPosition.x,
       y: this.size.box.height + brother.y
-    }
-  }
-
-  getChildBasePosition() {
-    return {
-      x: this.realBasePosition.x,
-      y: this.realBasePosition.y
     }
   }
 

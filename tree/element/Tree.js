@@ -1,12 +1,14 @@
-import {extraData} from '../utils/util'
+import {extraData, extraDataWithStatus} from '../utils/util'
 import NodeFactory from '../node/NodeFactory'
 import canvas from '../dom/canvas'
 import event from '../utils/event'
 import {setCurrentActiveKey} from '../utils/style'
+import Bus from '../utils/Bus'
 
 
-class Tree {
+class Tree extends Bus {
   constructor(data, ctx, el) {
+    super()
     this.rootNode = NodeFactory(extraData(data))
     this.event = event
     this.ctx = ctx || this.initCanvas(el)
@@ -19,19 +21,37 @@ class Tree {
     canvas.clearCanvas(this.ctx)
     this.event.clear()
     this.rootNode.draw(this.ctx, this.startPos)
+    this.trigger('update')
   }
 
-  repaint(data, startPos) {
-    if (!data) {
-      data = this.rootNode.getRawData()
+  repaint(data, startPos, keepStatus, uniqueKey) {
+    let newData
+    if (keepStatus && data) {
+      newData = extraDataWithStatus(data, this.rootNode.getRawData(), uniqueKey)
+    } else {
+      newData = extraData(this.rootNode.getRawData())
     }
-    this.rootNode = NodeFactory(extraData(data))
+    this.rootNode = NodeFactory(newData)
     this.draw(startPos)
   }
 
-  toggleNode(node) {
-    this.closeBrother(node)
+  toggleNode(node, open) {
+    if (!node) {
+      return
+    }
+    let currentNode = node
+    if (typeof currentNode !== 'object') {
+      currentNode = this.rootNode.getNodeByKey(currentNode)
+    }
+    // if (currentNode.layer <= 1) {
+      // this.closeBrother(currentNode)
+    // } else {
+    //
+    // }
+    currentNode.open = !currentNode.open
+    open !== undefined && (currentNode.open = open)
     this.repaint()
+    this.trigger('change')
   }
 
   closeBrother(node) {

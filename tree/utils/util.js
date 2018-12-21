@@ -85,6 +85,37 @@ function extraData(node, layer = 0, key = null) {
   return result
 }
 
+/**
+ * extraDataWithStatus
+ * @param node
+ * @param originNode
+ * @param uniqueKey
+ * @param layer
+ * @param key
+ * @returns {{}}
+ */
+function extraDataWithStatus(node, originNode, uniqueKey, layer = 0, key = null) {
+  const result = {...node}
+  const {children} = node
+  result.layer = layer
+  result.key = key
+  result.open = originNode ? originNode.open : layer <= DEFAULT_SHOW_LAYER
+  if (children && children.length > 0) {
+    result.children = node.children.map(function (child, cKey) {
+      return extraDataWithStatus(
+        child,
+        originNode.children && originNode.children.find(function (item) {
+          return item[uniqueKey] === child[uniqueKey]
+        }),
+        uniqueKey,
+        layer + 1,
+        key ? `${key}-${cKey}` : `${cKey}`
+      )
+    })
+  }
+  return result
+}
+
 function isBVNode(node) {
   return node.getLayout().direction === DIRECTIONS.bv
 }
@@ -103,12 +134,13 @@ function getIconBox({x, y}) {
 
 function generTestData() {
   function generateChildren({label = ''}) {
-    const len = Math.floor(Math.random() * 5 + 1)
+    const len = Math.floor(Math.random() * 10 + 1)
     const result = []
     for (let i = 0; i < len; i++) {
       result.push({
         titles: `测试节点${label}-${i}`,
         value: `测试节点${label}-${i}`,
+        level: Math.round(Math.random() * 3)
       })
     }
     return result
@@ -137,7 +169,8 @@ function generTestData() {
   return {
     titles: '跨越速运',
     value: 'root',
-    children: generatorData(4),
+    level: 1,
+    children: generatorData(7),
   }
 }
 
@@ -153,5 +186,6 @@ export {
   isRBVNode,
   getIconBox,
   isLeaf,
+  extraDataWithStatus,
   generTestData
 }
